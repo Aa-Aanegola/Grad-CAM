@@ -7,7 +7,7 @@ import numpy as np
 
 from torchvision import transforms
 from PIL import Image
-from typing import Union
+from typing import Union, List
 
 
 class GradCam(nn.Module):
@@ -15,7 +15,7 @@ class GradCam(nn.Module):
     def __init__(self, model: nn.Module, layer: nn.Module, device) -> None:
         super(GradCam, self).__init__()
         self.device = device
-        self.model = model
+        self.model = model.to(device)
         self.model.eval()
         self.layer = layer
 
@@ -60,7 +60,8 @@ class GradCam(nn.Module):
         heatmap = F.relu(heatmap)
         return heatmap / torch.max(heatmap)
 
-    def forward(self, image: Image, label: Union[torch.Tensor, None] = None, superimpose: bool = True) -> Image:
+    def forward(self, _image: Image, label: Union[torch.Tensor, None] = None, superimpose: bool = True) -> Image:
+        image = _image.copy()
         inp = self.image_transforms(image).to(self.device)
         cam = self._compute_cam(inp, label)
         inv_transforms = transforms.Compose([
@@ -78,3 +79,8 @@ class GradCam(nn.Module):
             return image
         else:
             return cam
+
+    def topk(self, image: Image, k=3) -> List:
+        inp = self.image_transforms(image).to(self.device)
+        out = self.model(inp)
+        return torch.topk(out, k).indices.squeeze().tolist()
