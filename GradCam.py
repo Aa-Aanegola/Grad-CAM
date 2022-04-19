@@ -16,6 +16,7 @@ class GradCam(nn.Module):
         super(GradCam, self).__init__()
         self.device = device
         self.model = model
+        self.model.eval()
         self.layer = layer
 
         self.gradients = None
