@@ -84,3 +84,89 @@ class GradCam(nn.Module):
         inp = self.image_transforms(image).to(self.device)
         out = self.model(inp)
         return torch.topk(out, k).indices.squeeze().tolist()
+
+class GuidedGradCam(nn.Module):
+
+    def __init__(self, model: nn.Module, layer: nn.Module, device) -> None:
+        super(GuidedGradCam, self).__init__()
+        self.device = device
+        self.model = model.to(device)
+        self.model.eval()
+        self.layer = layer
+
+        self.gradients = None
+        self.tensor_hook = None
+        self.activation_maps = None
+
+        def forward_hook(model: nn.Module, inp: torch.Tensor, out: torch.Tensor) -> None:
+            self.activation_maps = out
+            self.tensor_hook = self.activation_maps.register_hook(
+                self.backward_hook)
+
+        self.layer_hook = self.layer.register_forward_hook(forward_hook)
+
+        def relu_hook(module, grad_in, grad_out):
+            if isinstance(module, torch.nn.ReLU):
+                return (torch.clamp(grad_in[0], min=0.),)
+        
+        self.image_transforms = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+                0.229, 0.224, 0.255]),
+            transforms.Lambda(lambda t: t.unsqueeze(0))
+        ])
+
+        for i, module in enumerate(self.model.modules()):
+            if isinstance(module, torch.nn.ReLU):
+                module.register_backward_hook(relu_hook)
+
+
+    def backward_hook(self, grad: torch.Tensor) -> None:
+        self.gradients = grad
+
+    def _compute_cam(self, X: torch.Tensor, y) -> torch.Tensor:
+        out = self.model(X)
+        activation_maps = self.activation_maps.detach().cpu()
+        if y is None:
+            out[:, out.argmax()].backward()
+        else:
+            assert y.shape == torch.Size([1])
+            out[:, y].backward()
+
+        scores = torch.mean(self.gradients.detach().cpu(),
+                            dim=[0, 2, 3]).detach().cpu()
+
+        for i in range(activation_maps.shape[1]):
+            activation_maps[:, i, :, :] *= scores[i]
+
+        heatmap = torch.mean(activation_maps, dim=1).squeeze()
+        heatmap = F.relu(heatmap)
+        return heatmap / torch.max(heatmap)
+
+    def forward(self, _image: Image, label: Union[torch.Tensor, None] = None, colorify: bool = True) -> Image:
+        image = _image.copy()
+        inp = self.image_transforms(image).to(self.device)
+        inp.requires_grad = True
+        cam = self._compute_cam(inp, label)
+        print(cam.unsqueeze(0).shape)
+        cam = F.interpolate(cam.unsqueeze(0).unsqueeze(0), scale_factor=16).squeeze()
+        inv_transform = transforms.Compose([
+            transforms.ToPILImage(), 
+            transforms.Resize(image.size[::-1])])
+        print(inp.grad[0].mean(axis=1).shape)
+        cam = torch.mul(cam.to(device), inp.grad[0].mean(axis=0))
+        cam = inv_transform(cam)
+
+        if colorify:
+            cmap = mpl.cm.get_cmap('magma', 256)
+            cam = np.array(cmap(cam))
+            cam = Image.fromarray((cam * 255).astype(np.uint8))
+            return cam
+        else:
+            return cam
+
+    def topk(self, image: Image, k=3) -> List:
+        inp = self.image_transforms(image).to(self.device)
+        out = self.model(inp)
+        return torch.topk(out, k).indices.squeeze().tolist()
