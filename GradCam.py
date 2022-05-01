@@ -41,7 +41,7 @@ class GradCam(nn.Module):
     def backward_hook(self, grad: torch.Tensor) -> None:
         self.gradients = grad
 
-    def _compute_cam(self, X: torch.Tensor, y) -> torch.Tensor:
+    def _compute_cam(self, X: torch.Tensor, y, counterfactual) -> torch.Tensor:
         out = self.model(X)
         activation_maps = self.activation_maps.detach().cpu()
         if y is None:
@@ -52,7 +52,9 @@ class GradCam(nn.Module):
 
         scores = torch.mean(self.gradients.detach().cpu(),
                             dim=[0, 2, 3]).detach().cpu()
-
+        if counterfactual:
+            scores *= -1
+        
         for i in range(activation_maps.shape[1]):
             activation_maps[:, i, :, :] *= scores[i]
 
@@ -60,10 +62,10 @@ class GradCam(nn.Module):
         heatmap = F.relu(heatmap)
         return heatmap / torch.max(heatmap)
 
-    def forward(self, _image: Image, label: Union[torch.Tensor, None] = None, superimpose: bool = True) -> Image:
+    def forward(self, _image: Image, label: Union[torch.Tensor, None] = None, superimpose: bool = True, counterfactual: bool = False) -> Image:
         image = _image.copy()
         inp = self.image_transforms(image).to(self.device)
-        cam = self._compute_cam(inp, label)
+        cam = self._compute_cam(inp, label, counterfactual)
         inv_transforms = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize(image.size[::-1])
@@ -155,7 +157,7 @@ class GuidedGradCam(nn.Module):
             transforms.ToPILImage(), 
             transforms.Resize(image.size[::-1])])
         print(inp.grad[0].mean(axis=1).shape)
-        cam = torch.mul(cam.to(device), inp.grad[0].mean(axis=0))
+        cam = torch.mul(cam.to(self.device), inp.grad[0].mean(axis=0))
         cam = inv_transform(cam)
 
         if colorify:
