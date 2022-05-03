@@ -12,7 +12,7 @@ The implementation also includes extensions of GradCAM such as:
 - Counterfactual Activation Map
 
 ### File Structure
-`GradCam.py` contains the main implementation of the GradCAM and its extensions. The jupyter notebooks use modules imported from `GradCam.py`, and demonstrate its usage. 
+`GradCam.py` contains the main implementation of the GradCAM and its extensions. The jupyter notebooks use modules imported from `GradCam.py`, and demonstrate their usage. 
 
 ### Results
 - Base GradCAM
