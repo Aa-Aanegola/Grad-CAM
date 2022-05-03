@@ -1,10 +1,25 @@
 # Grad-CAM
-## SMAI Project, Spring 2021
+## Statistical Methods in AI, Spring 2021
 
 ### About
 Implementation based on the paper by [Selvaraju et al.](https://arxiv.org/pdf/1610.02391.pdf)
 
-Pytorch implementation for Grad-CAM, using [pytorch hooks](https://pytorch.org/tutorials/beginner/former_torchies/nnft_tutorial.html), which enable us to access the individual gradients while backpropagation.
+Pytorch implementation for Grad-CAM, using [pytorch hooks](https://pytorch.org/tutorials/beginner/former_torchies/nnft_tutorial.html), which enable us to access the individual gradients while backpropagation. The GradCAM implementation can look at the gradients flowing through any specified CNN layer in the model.
+
+The implementation also includes extensions of GradCAM such as:
+- Target Specific GradCAM
+- Guided GradCAM
+- Counterfactual Activation Map
+
+### File Structure
+`GradCam.py` contains the main implementation of the GradCAM and its extensions. The jupyter notebooks use modules imported from `GradCam.py`, and show how to use it.
 
 ### Results
-![Target Specific Classification](sample_images/dog_and_cat_res.png)
+- Base GradCAM
+![Base GradCAM](sample_images/base_gradcam.png)
+- Target Oriented GradCAM
+![Target Oriented GradCAM](sample_images/dog_and_cat_res.png)
+- Counterfactual​ Activation Mapping
+![Counterfactual​ Activation Mapping](sample_images/counterfactual_res.png)
+- ​Guided GradCAM
+![Guided GradCAM](sample_images/guided_gradcam_res.png.png)
