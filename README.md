@@ -29,4 +29,4 @@ The implementation also includes extensions of GradCAM such as:
 
 - ​Guided GradCAM
 
-![Guided GradCAM](sample_images/guided_gradcam_res.png.png)
+![Guided GradCAM](sample_images/guided_gradcam_res.png)
