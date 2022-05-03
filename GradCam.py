@@ -150,13 +150,13 @@ class GuidedGradCam(nn.Module):
         image = _image.copy()
         inp = self.image_transforms(image).to(self.device)
         inp.requires_grad = True
+        
         cam = self._compute_cam(inp, label)
-        print(cam.unsqueeze(0).shape)
         cam = F.interpolate(cam.unsqueeze(0).unsqueeze(0), scale_factor=16).squeeze()
         inv_transform = transforms.Compose([
             transforms.ToPILImage(), 
             transforms.Resize(image.size[::-1])])
-        print(inp.grad[0].mean(axis=1).shape)
+        
         cam = torch.mul(cam.to(self.device), inp.grad[0].mean(axis=0))
         cam = inv_transform(cam)
 
