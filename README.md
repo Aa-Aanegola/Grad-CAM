@@ -19,7 +19,7 @@ The implementation also includes extensions of GradCAM such as:
 
 ![Base GradCAM](sample_images/base_gradcam.png)
 
-- Target Oriented GradCAM
+- Class Discriminative GradCAM
 
 ![Target Oriented GradCAM](sample_images/dog_and_cat_res.png)
 
