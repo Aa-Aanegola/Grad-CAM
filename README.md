@@ -16,10 +16,17 @@ The implementation also includes extensions of GradCAM such as:
 
 ### Results
 - Base GradCAM
+
 ![Base GradCAM](sample_images/base_gradcam.png)
+
 - Target Oriented GradCAM
+
 ![Target Oriented GradCAM](sample_images/dog_and_cat_res.png)
+
 - Counterfactual​ Activation Mapping
+
 ![Counterfactual​ Activation Mapping](sample_images/counterfactual_res.png)
+
 - ​Guided GradCAM
+
 ![Guided GradCAM](sample_images/guided_gradcam_res.png.png)
