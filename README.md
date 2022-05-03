@@ -24,8 +24,7 @@ The implementation also includes extensions of GradCAM such as:
 ![Target Oriented GradCAM](sample_images/dog_and_cat_res.png)
 
 - Counterfactual​ Activation Mapping
-
-![Counterfactual​ Activation Mapping](sample_images/counterfactual_res.png)
+<img src="sample_images/counterfactual_res.png" alt="Counterfactual​ Activation Mapping" width="200"/>
 
 - ​Guided GradCAM
 
