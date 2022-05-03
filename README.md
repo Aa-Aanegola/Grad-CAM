@@ -29,3 +29,7 @@ The implementation also includes extensions of GradCAM such as:
 - ​Guided GradCAM
 
 ![Guided GradCAM](sample_images/guided_gradcam_res.png)
+
+- ​GradCAM for VQA
+
+![GradCAM for VQA](sample_images/vqa_images/results/Surfing.png)
